@@ -1,4 +1,4 @@
-# Multer S3
+# Multer S3 with split file into multi files
 
 Streaming multer storage engine for AWS S3.
 
@@ -178,6 +178,32 @@ var upload = multer({
   })
 })
 ```
+
+
+## Split File before Upload
+The optional `shouldSplit` option tells multer whether it should split the file before it is uploaded. By default, it is set to false. If set to true, `spliter` option must be added, which tells the array of file after split. `spliter` option should be an Array, containing objects with can have properties `id`, `key` and `body`.
+```javascript
+const createSpliter = (req, file, cb) => {
+    const array = handle(file.stream);
+    const spliter = array.map((each, i) => {
+      return {
+        key : i,
+        body: each
+      }
+    });
+    cb(null, spliter);
+};
+const upload = multer({
+    storage: multerS3({
+        s3: S3,
+        acl: 'public-read',
+        shouldSplite: true,
+        spliter: createSpliter,
+    }),
+});
+```
+
+If this option is used, each file passed to your router request will have a `spliter` array.
 
 ## Using Server-Side Encryption
 
